@@ -1,5 +1,8 @@
 package com.ramosisw.home.assistant.api.to;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.websocket.Session;
 
 import com.ramosisw.jee.web.core.api.to.BasicType;
@@ -13,6 +16,7 @@ public class SubscriptorType {
 	Session client;
 	int id;
 	BasicType basicMessage;
+	List<BasicType> waitForResponse;
 
 	public SubscriptorType() {
 		super();
@@ -45,6 +49,12 @@ public class SubscriptorType {
 
 	public void setBasicType(BasicType basicMessage) {
 		this.basicMessage = basicMessage;
+	}
+
+	public List<BasicType> getWaitForResponse() {
+		if(waitForResponse == null)
+			waitForResponse = new ArrayList<>();
+		return waitForResponse;
 	}
 	
 	

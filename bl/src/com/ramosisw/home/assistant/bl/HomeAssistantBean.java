@@ -12,6 +12,7 @@ import com.ramosisw.home.assistant.api.ifc.HomeAssistantLocal;
 import com.ramosisw.jee.web.core.api.ex.BLException;
 import com.ramosisw.jee.web.core.api.to.BasicType;
 import com.ramosisw.jee.web.core.api.util.Bean;
+import com.ramosisw.jee.web.core.api.util.StringUtils;
 
 /**
  * 
@@ -22,6 +23,10 @@ import com.ramosisw.jee.web.core.api.util.Bean;
 @TransactionManagement(TransactionManagementType.CONTAINER)
 public class HomeAssistantBean implements HomeAssistantLocal {
 	private final static Logger log = Logger.getLogger(HomeAssistantBean.class.getName());
+	
+	public HomeAssistantBean() {
+		log.info("HomeAssistantBean initialized!");
+	}
 
 	@EJB
 	EndpointLocal bean;
@@ -44,6 +49,7 @@ public class HomeAssistantBean implements HomeAssistantLocal {
 	@Override
 	public BasicType action(int id) throws BLException {
 		BasicType sync = new BasicType();
+		sync.setMessage(StringUtils.getUUID());
 		getBean().action(id, sync);
 		synchronized (sync) {
 			try {

@@ -28,7 +28,7 @@ public class EndpointBean implements EndpointLocal {
 	private int clients = 0;
 
 	public EndpointBean() {
-		log.info("EJB initialized!");
+		log.info("EndpointBean initialized!");
 	}
 
 	void addClient(int num) throws BLException {
@@ -63,15 +63,16 @@ public class EndpointBean implements EndpointLocal {
 
 	@Override
 	public void onClose(Session client) throws BLException {
-		for (SubscriptorType subscriptor : subscribers) {
-			if (subscriptor.getClient().equals(client)) {
-				if (subscriptor.getBasicType() != null)
-					synchronized (subscriptor.getBasicType()) {
-						subscriptor.getBasicType().setMessage("Client was disconnected");
-						subscriptor.getBasicType().notify();
+		for (SubscriptorType sub : subscribers) {
+			if (sub.getClient().equals(client)) {
+				for (BasicType wf : sub.getWaitForResponse()) {
+					synchronized (wf) {
+						wf.setMessage("Client disconnected");
+						wf.notify();
 					}
+				}
 
-				subscribers.remove(subscriptor);
+				subscribers.remove(sub);
 				addClient(-1);
 				break;
 			}
@@ -93,11 +94,13 @@ public class EndpointBean implements EndpointLocal {
 
 			if (sub != null) {
 				sub.setId(clientMessage.getCode());
-				if (sub.getBasicType() != null)
-					synchronized (sub.getBasicType()) {
-						sub.getBasicType().setMessage(clientMessage.getMessage());
-						sub.getBasicType().notify();
-					}
+				for (BasicType wf : sub.getWaitForResponse()) {
+					if (wf.getMessage().equals(clientMessage.getMessage()))
+						synchronized (wf) {
+							wf.setMessage(clientMessage.getMessage());
+							wf.notify();
+						}
+				}
 			}
 			client.getAsyncRemote().sendText(mapper.writeValueAsString(basicMessage));
 		} catch (JsonProcessingException e) {
@@ -113,9 +116,9 @@ public class EndpointBean implements EndpointLocal {
 	@Override
 	public BasicType action(int id, BasicType sync) throws BLException {
 		log.info(String.format("Action to id [%d]", id));
-		BasicType bt = new BasicType(200, new Date().toString());
+		BasicType bt = new BasicType(200, sync.getMessage());
 		SubscriptorType client = getSubscriptor(id);
-		client.setBasicType(sync);
+		client.getWaitForResponse().add(sync);
 		try {
 			client.getClient().getAsyncRemote().sendText(mapper.writeValueAsString(bt));
 		} catch (JsonProcessingException e) {
