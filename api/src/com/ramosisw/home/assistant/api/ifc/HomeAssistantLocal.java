@@ -13,4 +13,6 @@ import com.ramosisw.jee.web.core.api.to.BasicType;
 @Local
 public interface HomeAssistantLocal {
 	public BasicType test() throws BLException;
+
+	public BasicType action(int id) throws BLException;
 }

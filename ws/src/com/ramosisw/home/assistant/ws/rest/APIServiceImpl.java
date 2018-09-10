@@ -43,4 +43,14 @@ public class APIServiceImpl implements APIService {
 		}
 	}
 
+	@Override
+	public BasicMessage index(int id) throws Exception {
+		try {
+			return BasicTO.getTO(getBean().action(id));
+		} catch (BLException e) {
+			log.error(e);
+			throw e;
+		}
+	}
+
 }
