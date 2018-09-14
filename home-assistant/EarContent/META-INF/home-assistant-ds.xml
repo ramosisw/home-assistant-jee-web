@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xml>
+<datasources xmlns="http://www.jboss.org/ironjacamar/schema">
+	<datasource jndi-name="java:jboss/datasources/home-assistant"
+		enabled="true" use-java-context="true" pool-name="home-assistant">
+		<connection-url>jdbc:h2:~/home-assistant</connection-url>
+		<driver>h2</driver>
+		<security>
+			<user-name>sa</user-name>
+			<password>sa</password>
+		</security>
+	</datasource>
+</datasources>

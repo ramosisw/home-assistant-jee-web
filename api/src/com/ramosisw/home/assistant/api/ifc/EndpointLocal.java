@@ -1,11 +1,20 @@
 package com.ramosisw.home.assistant.api.ifc;
 
+import java.util.List;
+
 import javax.ejb.Local;
 import javax.websocket.Session;
 
+import com.ramosisw.home.assistant.api.to.ControllerType;
+import com.ramosisw.home.assistant.api.to.InvocationType;
+import com.ramosisw.home.assistant.api.to.MessageType;
 import com.ramosisw.jee.web.core.api.ex.BLException;
-import com.ramosisw.jee.web.core.api.to.BasicType;
 
+/**
+ * 
+ * @author jcramos
+ *
+ */
 @Local
 public interface EndpointLocal {
 	public void onClose(Session session) throws BLException;
@@ -15,7 +24,9 @@ public interface EndpointLocal {
 	public void onMessage(String text, Session client) throws BLException;
 
 	public int getNumOfClients();
-	
-	public BasicType action(int id, BasicType bt) throws BLException;
-	
+
+	public void action(String id, MessageType<InvocationType> message) throws BLException;
+
+	public List<ControllerType> getDevices() throws BLException;
+
 }

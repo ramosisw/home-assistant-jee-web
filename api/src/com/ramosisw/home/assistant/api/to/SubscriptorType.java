@@ -5,7 +5,7 @@ import java.util.List;
 
 import javax.websocket.Session;
 
-import com.ramosisw.jee.web.core.api.to.BasicType;
+import com.ramosisw.home.assistant.api.enm.Client;
 
 /**
  * 
@@ -13,10 +13,10 @@ import com.ramosisw.jee.web.core.api.to.BasicType;
  *
  */
 public class SubscriptorType {
-	Session client;
-	int id;
-	BasicType basicMessage;
-	List<BasicType> waitForResponse;
+	private Session client;
+	private ControllerType controller;
+	private List<InvocationType> invocations;
+	private Client type;
 
 	public SubscriptorType() {
 		super();
@@ -27,35 +27,78 @@ public class SubscriptorType {
 		this.client = client;
 	}
 
+	/**
+	 * @return the client
+	 */
 	public Session getClient() {
 		return client;
 	}
 
+	/**
+	 * @param client
+	 *            the client to set
+	 */
 	public void setClient(Session client) {
 		this.client = client;
 	}
 
-	public int getId() {
-		return id;
+	/**
+	 * @return the invocations
+	 */
+	public List<InvocationType> getInvocations() {
+		if (invocations == null)
+			invocations = new ArrayList<>();
+		return invocations;
 	}
 
-	public void setId(int id) {
-		this.id = id;
+	/**
+	 * @return the controller
+	 */
+	public ControllerType getController() {
+		return controller;
 	}
 
-	public BasicType getBasicType() {
-		return basicMessage;
+	/**
+	 * @param controller
+	 *            the controller to set
+	 */
+	public void setController(ControllerType controller) {
+		this.controller = controller;
 	}
 
-	public void setBasicType(BasicType basicMessage) {
-		this.basicMessage = basicMessage;
+	/**
+	 * @return the type
+	 */
+	public Client getType() {
+		return type;
 	}
 
-	public List<BasicType> getWaitForResponse() {
-		if(waitForResponse == null)
-			waitForResponse = new ArrayList<>();
-		return waitForResponse;
+	/**
+	 * @param type
+	 *            the type to set
+	 */
+	public void setType(Client type) {
+		this.type = type;
 	}
-	
-	
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("SubscriptorType [client=");
+		builder.append(client);
+		builder.append(", controller=");
+		builder.append(controller);
+		builder.append(", invocations=");
+		builder.append(invocations);
+		builder.append(", type=");
+		builder.append(type);
+		builder.append("]");
+		return builder.toString();
+	}
+
 }

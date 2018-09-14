@@ -3,9 +3,10 @@
 	<name>home-assistant</name>
 	<comment></comment>
 	<projects>
+		<project>api</project>
 		<project>ws</project>
 		<project>bl</project>
-		<project>api</project>
+		<project>pl</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
@@ -35,6 +36,11 @@
 			<locationURI>PARENT-2-PROJECT_LOC/lib/commons-compress-1.9.jar</locationURI>
 		</link>
 		<link>
+			<name>EarContent/lib/h2-1.4.193.jar</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/lib/h2-1.4.193.jar</locationURI>
+		</link>
+		<link>
 			<name>EarContent/lib/jackson-core-2.8.8.jar</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/lib/jackson-core-2.8.8.jar</locationURI>
@@ -52,7 +58,7 @@
 		<link>
 			<name>EarContent/lib/ramosisw-jee-web-core.jar</name>
 			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/jee-web-core/bin/ramosisw-jee-web-core.jar</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/lib/ramosisw-jee-web-core.jar</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

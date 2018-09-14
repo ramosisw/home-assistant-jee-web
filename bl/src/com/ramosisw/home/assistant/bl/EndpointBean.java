@@ -1,8 +1,10 @@
 package com.ramosisw.home.assistant.bl;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.ejb.Stateless;
@@ -11,8 +13,14 @@ import javax.websocket.Session;
 import org.jboss.logging.Logger;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ramosisw.home.assistant.api.enm.Client;
 import com.ramosisw.home.assistant.api.ifc.EndpointLocal;
+import com.ramosisw.home.assistant.api.to.ControllerType;
+import com.ramosisw.home.assistant.api.to.InvocationType;
+import com.ramosisw.home.assistant.api.to.MessageType;
 import com.ramosisw.home.assistant.api.to.SubscriptorType;
 import com.ramosisw.jee.web.core.api.ex.BLException;
 import com.ramosisw.jee.web.core.api.to.BasicType;
@@ -52,22 +60,23 @@ public class EndpointBean implements EndpointLocal {
 		throw new BLException(2001, String.format("Client with session id [%s] not found", client.getId()));
 	}
 
-	SubscriptorType getSubscriptor(int id) throws BLException {
-		log.info(String.format("Find subscriptor with id [%d]", id));
+	SubscriptorType getSubscriptor(String id) throws BLException {
+		log.info(String.format("Find subscriptor with id [%s]", id));
 		for (SubscriptorType subscriptor : subscribers)
-			if (subscriptor.getId() == id)
+			if (subscriptor.getController().getId().equals(id))
 				return subscriptor;
-		throw new BLException(2000, String.format("Client with id [%d] not found", id));
+		throw new BLException(2000, String.format("Client with id [%s] not found", id));
 	}
 
 	@Override
 	public void onClose(Session client) throws BLException {
 		for (SubscriptorType sub : subscribers) {
 			if (sub.getClient().equals(client)) {
-				for (BasicType wf : sub.getWaitForResponse()) {
-					synchronized (wf) {
-						wf.setMessage("Client disconnected");
-						wf.notify();
+				for (InvocationType it : sub.getInvocations()) {
+					synchronized (it) {
+						it.setMessage("Client disconnected");
+						it.setInvocated(false);
+						it.notify();
 					}
 				}
 
@@ -85,26 +94,50 @@ public class EndpointBean implements EndpointLocal {
 	}
 
 	@Override
-	public void onMessage(String text, Session client) throws BLException {
+	public void onMessage(String text, Session session) throws BLException {
 		BasicType basicMessage = new BasicType(200, "Success");
 		try {
-			BasicType clientMessage = mapper.readValue(text, BasicType.class);
-			SubscriptorType sub = getSubscriptor(client);
+			SubscriptorType client = getSubscriptor(session);
+			if (client == null)
+				return;
 
-			if (sub != null) {
-				sub.setId(clientMessage.getCode());
-				for (BasicType wf : sub.getWaitForResponse()) {
-					if (wf.getMessage().equals(clientMessage.getMessage()))
-						synchronized (wf) {
-							wf.setMessage(clientMessage.getMessage());
-							wf.notify();
+			MessageType<JsonNode> action = mapper.readValue(text, new TypeReference<MessageType<JsonNode>>() {
+			});
+			log.info(action);
+			switch (action.getAction()) {
+			case SUBSCRIBE:
+				ControllerType controller = mapper.readValue(action.getPayload().toString(), ControllerType.class);
+				client.setController(controller);
+				log.info(client);
+				break;
+			case INVOCATION:
+				InvocationType client_invocation = mapper.readValue(action.getPayload().toString(),
+						InvocationType.class);
+				log.info(client_invocation);
+				for (InvocationType invocation : client.getInvocations()) {
+					if (client_invocation.getUuid().equals(invocation.getUuid())) {
+						synchronized (invocation) {
+							invocation.setMessage(client_invocation.getMessage());
+							invocation.setInvocated(client_invocation.isInvocated());
+							invocation.notify();
 						}
+					}
 				}
+				break;
+			case MESSAGE:
+				log.info(action.getPayload().toString());
+				break;
+			case NOTIFICATION:
+				log.info(action.getPayload().toString());
+				break;
+			default:
+				basicMessage.setMessage("Message not identify");
+				break;
 			}
-			client.getAsyncRemote().sendText(mapper.writeValueAsString(basicMessage));
+			session.getAsyncRemote().sendText(mapper.writeValueAsString(basicMessage));
 		} catch (JsonProcessingException e) {
-			client.getAsyncRemote()
-					.sendText(String.format("{\"code\": 666, \"message\": \"%s\"}", "Error al construir la respuesta"));
+			log.error(e);
+			session.getAsyncRemote().sendText(String.format("{\"code\": 666, \"message\": \"%s\"}", e.getMessage()));
 		} catch (IOException e) {
 			log.error(e);
 			basicMessage.setCode(500);
@@ -112,18 +145,37 @@ public class EndpointBean implements EndpointLocal {
 		}
 	}
 
+	/**
+	 * 
+	 */
 	@Override
-	public BasicType action(int id, BasicType sync) throws BLException {
-		log.info(String.format("Action to id [%d]", id));
-		BasicType bt = new BasicType(200, sync.getMessage());
+	public void action(String id, MessageType<InvocationType> message) throws BLException {
+		log.info(String.format("Action to id [%s]", id));
 		SubscriptorType client = getSubscriptor(id);
-		client.getWaitForResponse().add(sync);
+		client.getInvocations().add(message.getPayload());
+
 		try {
-			client.getClient().getAsyncRemote().sendText(mapper.writeValueAsString(bt));
+			log.info("Sending message: " + message);
+			client.getClient().getAsyncRemote().sendText(mapper.writeValueAsString(message));
 		} catch (JsonProcessingException e) {
 			log.error(e);
 		}
-		return bt;
+	}
+
+	/**
+	 * 
+	 */
+	@Override
+	public List<ControllerType> getDevices() throws BLException {
+		log.info("getDevices()");
+		List<ControllerType> devices = new ArrayList<>();
+		for (SubscriptorType subscriptor : this.subscribers) {
+			if (subscriptor.getType() == Client.DEVICE) {
+				devices.add(subscriptor.getController());
+			}
+		}
+		log.info(String.format("Devies found [%d]", devices.size()));
+		return devices;
 	}
 
 }

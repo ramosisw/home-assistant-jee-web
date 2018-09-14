@@ -7,6 +7,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import com.ramosisw.home.assistant.ws.msgs.DevicesMessage;
 import com.ramosisw.jee.web.core.ws.rest.messages.BasicMessage;
 
 /**
@@ -28,6 +29,18 @@ public interface APIService {
 	@Path("")
 	public BasicMessage index() throws Exception;
 
+	@GET
+	@Path("/devices")
+	public DevicesMessage devices() throws Exception;
+
+	@GET
+	@Path("/devices/add")
+	public BasicMessage devices_add() throws Exception;
+
+	@GET
+	@Path("/devices/all")
+	public DevicesMessage devices_all() throws Exception;
+
 	/**
 	 * 
 	 * @param id
@@ -36,5 +49,5 @@ public interface APIService {
 	 */
 	@GET
 	@Path("/{id}")
-	public BasicMessage index(@PathParam("id") int id) throws Exception;
+	public BasicMessage index(@PathParam("id") String id) throws Exception;
 }
