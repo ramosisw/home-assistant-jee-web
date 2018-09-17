@@ -56,6 +56,11 @@
 			<locationURI>PARENT-2-PROJECT_LOC/lib/javax.websocket-api-1.1.jar</locationURI>
 		</link>
 		<link>
+			<name>EarContent/lib/jjwt-0.6.0.jar</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/lib/jjwt-0.6.0.jar</locationURI>
+		</link>
+		<link>
 			<name>EarContent/lib/ramosisw-jee-web-core.jar</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/lib/ramosisw-jee-web-core.jar</locationURI>

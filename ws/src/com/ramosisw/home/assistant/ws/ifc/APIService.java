@@ -8,6 +8,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import com.ramosisw.home.assistant.ws.msgs.DevicesMessage;
+import com.ramosisw.jee.web.core.api.ifc.SecureRequest;
 import com.ramosisw.jee.web.core.ws.rest.messages.BasicMessage;
 
 /**
@@ -18,7 +19,8 @@ import com.ramosisw.jee.web.core.ws.rest.messages.BasicMessage;
 @Path("/")
 @Produces({ MediaType.APPLICATION_JSON })
 @Consumes({ MediaType.APPLICATION_JSON })
-public interface APIService {
+@SecureRequest
+public interface APIService{
 
 	/**
 	 * 
